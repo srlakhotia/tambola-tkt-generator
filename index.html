@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    table {
+      border: 3px solid black;
+      width: 600px;
+      margin-bottom: 50px;
+    }
+    table tr {
+      padding: 0;
+      margin: 0;
+    }
+    table tr td {
+      padding: 15px 20px;
+      border: 2px solid black;
+      border-collapse: collapse;
+    }
+    input[type="number"]{
+      padding: 10px 15px;
+      font-size: 17px;
+      height: 40px;
+      width: 300px;
+      margin-right: 20px;
+    }
+    input[type="button"] {
+      padding: 20px;
+      height: 40px;
+      width: 200px;
+      font-size: 17px;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <input type="number" id="no-of-tickets" placeholder="generage 1 to 4 tickets" value="1" min="1" max="5" required />
+    <input type="button" onclick="generateTickets()" value="generate" />
+  </div>
+  <div id="tickets-container"></div>
+
+  <script type="text/javascript">
+    let numberSet = {};
+    let uniqueNumberSet = [];
+    const ticketContainer = document.getElementById('tickets-container');
+
+    const generateTable = tableId => {
+      const generateCols = (row) => {
+        let colTemplate = ``;
+        for(let i = 0; i < 9; i++) {
+          const val = numberSet[tableId].rowSet[row][i] || '';
+          colTemplate += `<td>${val}</td>`;
+        }
+        return colTemplate;
+      }
+      const generateRows = () => {
+        let rowTemplate = ``;
+        for(let i = 0; i < 3; i++) {
+          rowTemplate += `<tr>${generateCols(i)}</tr>`;
+        }
+        return rowTemplate;
+      }
+
+      return `
+        <table id="lotto-table-${tableId}" class="lotto-table">
+          <tbody>
+            ${generateRows()};
+          </tbody>
+        </table>
+      `;
+    }
+
+    const generateFirstNumbers = (ticketNumber) => {
+      numberSet[`${ticketNumber}`] = {
+        rowSet: [{}, {}, {}]
+      };
+
+      for(var i = 0; i < 9; i++) {
+        let newNum = -1;
+        if(i === 0) {
+          newNum = Math.floor((Math.random() * 9)+ 1);
+          if(uniqueNumberSet.indexOf(newNum) > -1) {
+            --i;
+            continue;
+          }
+        } else if(i === 8) {
+          newNum = Math.floor((Math.random() * 11)+ 80);
+          if(uniqueNumberSet.indexOf(newNum) > -1) {
+            --i;
+            continue;
+          }
+        } else {
+          newNum = Math.floor((Math.random() * 10)+ (i * 10));
+          if(uniqueNumberSet.indexOf(newNum) > -1) {
+            --i;
+            continue;
+          }
+        }
+
+        numberSet[ticketNumber][i] = [newNum];
+        uniqueNumberSet.push(newNum);
+      }
+    };
+
+    const generateRandomRows4MultipleNumbers = (ticketNumber) => {
+      numberSet[ticketNumber].colSet = [[], []];
+      for(let i = 0; i < numberSet[ticketNumber].colSet.length; i++) {
+        for(let j = 0; j < 3; j++) {
+          const randomRow = Math.floor(Math.random() * 3) + (j * 3);
+          if(numberSet[ticketNumber].colSet[i].indexOf(randomRow) > -1) {
+            --j;
+          } else {
+            numberSet[ticketNumber].colSet[i].push(randomRow);
+          }
+        }
+        numberSet[ticketNumber].colSet[i].sort();
+      }
+    };
+
+    const setMoreValues = (ticketNumber) => {
+      const sortFinalNumbers = () => {
+        for(let row in numberSet[ticketNumber]) {
+          numberSet[ticketNumber][row].sort();
+        }
+      };
+
+      for(let i = 0; i < numberSet[ticketNumber].colSet.length; i++) {
+        for(let j = 0; j < numberSet[ticketNumber].colSet[i].length; j++) {
+          let col = numberSet[ticketNumber].colSet[i][j];
+          let newNum = -1;
+          if(col === 0) {
+            newNum = Math.floor((Math.random() * 9)+ 1);
+          } else if(col === 8) {
+            newNum = Math.floor((Math.random() * 11)+ 80);
+          } else {
+            newNum = Math.floor((Math.random() * 10)+ (col * 10));
+          }
+          if(numberSet[ticketNumber][col].indexOf(newNum) > -1 || uniqueNumberSet.indexOf(newNum) > -1) {
+            --j;
+          } else {
+            numberSet[ticketNumber][col].push(newNum);
+            uniqueNumberSet.push(newNum);
+          }
+        }
+      }
+      sortFinalNumbers();
+    };
+
+    const populateRows = (ticketNumber) => {
+      const populate3Vals = (values, col) => {
+        for(let i = 0; i < 3; i++) {
+          numberSet[ticketNumber].rowSet[i][col] = values[i];
+        }
+      };
+
+      const populate2Vals = (values, col) => {
+        let prevRow = -1;
+        for(let i = 0; i < 2; i ++) {
+          let randRow = -1;
+          if(i === 0) {
+            prevRow = randRow = Math.floor(Math.random() * 2);
+          } else {
+            if(prevRow === 0) {
+              randRow = Math.floor(Math.random() * 2) + 1;
+            } else {
+              randRow = 2;
+            }
+          }
+          numberSet[ticketNumber].rowSet[randRow][col] = values[i];
+        }
+      };
+      const populate1Vals = (values, col) => {
+        let randRow = Math.floor(Math.random() * 3);
+        if(Object.keys(numberSet[ticketNumber].rowSet[randRow]).length >= 5) {
+          populate1Vals(values, col);
+        } else {
+          numberSet[ticketNumber].rowSet[randRow][col] = values[0];
+        }
+      };
+
+      for(let i = 0; i < 9; i++) {
+        if(numberSet[ticketNumber][i].length === 3) {
+          populate3Vals(numberSet[ticketNumber][i], i);
+        } else if(numberSet[ticketNumber][i].length === 2) {
+          populate2Vals(numberSet[ticketNumber][i], i);
+        }
+      }
+      for(let i = 0; i < 9; i++) {
+        if(numberSet[ticketNumber][i].length === 1) {
+          populate1Vals(numberSet[ticketNumber][i], i);
+        }
+      }
+    };
+
+    const generateSingleTicket = (ticketNumber) => {
+      const rowSet = numberSet[ticketContainer][rowSet];
+      const table = generateTable(ticketNumber);
+
+
+    }
+    const generateTickets = () => {
+      const noOfTickets = parseInt(document.getElementById('no-of-tickets').value);
+      if(noOfTickets > 5 || noOfTickets < 1) {
+        return;
+      }
+      numberSet = {};
+      uniqueNumberSet = [];
+      ticketContainer.innerHTML = '';
+      for(let i = 0; i < noOfTickets; i++) {
+        generateFirstNumbers(i);
+        generateRandomRows4MultipleNumbers(i);
+        setMoreValues(i);
+        populateRows(i);
+        ticketContainer.insertAdjacentHTML('beforeend', generateTable(i));
+      }
+    };
+  </script>
+</body>
+</html>
