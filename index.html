@@ -3,8 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href='https://fonts.googleapis.com/css?family=Nunito' rel='stylesheet' type='text/css'>
   <title>Document</title>
   <style>
+    * {
+      font-family: 'Nunito', sans-serif;
+    }
     table {
       border: 3px solid #678d88;
       width: 600px;
@@ -202,12 +206,6 @@
       }
     };
 
-    const generateSingleTicket = (ticketNumber) => {
-      const rowSet = numberSet[ticketContainer][rowSet];
-      const table = generateTable(ticketNumber);
-
-
-    }
     const generateTickets = () => {
       const noOfTickets = parseInt(document.getElementById('no-of-tickets').value);
       if(noOfTickets > 5 || noOfTickets < 1) {
